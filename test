@@ -1,0 +1,1402 @@
+-- AI Settings
+-- AI Behavioral Settings
+_G.abilityRange = 70 -- the target must be atleast 65 studs away before using abilities
+-- ABILITY RANGE MUST BE GREATER THAN BOSSRANGE AND MOBRANGE TO HIT ANYTHING
+_G.bossRange = 30  -- this is how far away the bot will try stay away from bosses
+_G.mobRange = 40 -- this is how far away the bot will try to stay away from mobs
+_G.ignoreAbilityRange = false
+_G.smallTeleports = true -- if true, player teleports to places, might want to lower walkspeed alittle or else you'll probably get kicked
+_G.teleportDuringBossOnly = true -- if true, only use smallTeleports when its time for a boss
+_G.doInstakill = true
+-- AI Visual Settings
+_G.showTarget = true -- this will highlight each target in a red box
+_G.showPath = true
+-- AI Performance
+_G.extremelyFast = true -- makes the ai think exponentially faster, but might lag for peopel
+-- Lobby Settings
+_G.maxWaitTimeInLobby = 0 -- this is how long itll randomly walk around for before going into a dungeon 
+
+local function jmp(v1) -- anti jmp function, returns some important script variables, you'll implement this table into the script to make sure it wasnt jmped
+  if Compare(v1, true) and v1 == true then
+    return {game:GetService("CollectionService"), game:GetService("PathfindingService"), table.insert, table.remove} 
+  else 
+    report('jmp')
+  end
+end
+
+local rand = math.random(1, 4)
+local randcheck = rand == 3 and Compare(rand, 3)
+if randcheck then 
+  gamer = jmp(randcheck)
+end
+
+function AIMovementInLobby()
+    local clock = 0
+    local doneMoving = false
+    _G.ai_done = false
+    local zombie = game.Players.LocalPlayer.Character
+    local Zombiehumanoid = zombie.Humanoid
+    spawn(function()
+        local PathfindingService = game:GetService("PathfindingService")
+        local randomWayPoints = {
+          {
+            Vector3.new(29.4448986, 10.6809521, 1005.28198),
+          },
+          {
+            Vector3.new(120.158272, 5.05413818, 1005.26672),
+          },
+          {
+            Vector3.new(145.121567, 4.79999876, 1028.203),
+          },
+          {
+            Vector3.new(138.910416, 4.85120726, 1080.46936),
+          },
+          {
+            Vector3.new(50.0033913, 5.40119982, 1025.59448),
+            Vector3.new(12.7496023, 4.94986296, 1046.24768),
+          },
+          {
+            Vector3.new(56.9857826, 5.10824966, 1066.79846),
+            Vector3.new(40.124321, 5, 1055.27551),
+          },
+          {
+            Vector3.new(28.1154366, 4.8208971, 1041.24829),
+          },
+          {
+            Vector3.new(8.27422428, 4.80000019, 1034.32092),
+            Vector3.new(-36.9196014, 4.80000019, 1022.45972),
+            Vector3.new(-93.4016876, 5.84888077, 1107.07776),
+            Vector3.new(-134.147461, 5.84888077, 1080.1228),
+          },
+          {
+            Vector3.new(8.27422428, 4.80000019, 1034.32092),
+            Vector3.new(-36.9196014, 4.80000019, 1022.45972),
+            Vector3.new(-69.0564728, 5.87887812, 1101.21545),
+          },
+          {
+            Vector3.new(8.27422428, 4.80000019, 1034.32092),
+            Vector3.new(-36.9196014, 4.80000019, 1022.45972),
+            Vector3.new(-57.2358208, 5.81887817, 1059.91345),
+          },
+          {
+            Vector3.new(104.851845, 4.80013657, 1029.08655),
+            Vector3.new(66.5649185, 11.1366758, 981.947205),
+            Vector3.new(58.9183998, 15.5042267, 969.327759),
+          },
+          {
+            Vector3.new(106.917046, 5.1029253, 1033.20129),
+            Vector3.new(126.421371, 4.80742407, 1017.41754),
+            Vector3.new(109.249374, 4.99999857, 998.975525),
+          },
+          {
+            Vector3.new(37.6123543, 5.1142168, 1041.55664),
+            Vector3.new(8.08811092, 11.3835154, 1087.04956),
+            Vector3.new(3.8377471, 4.81672573, 1051.76331),
+          },
+          {
+            Vector3.new(74.2765732, 4.79785824, 1034.74109),
+            Vector3.new(59.2142448, 5, 1081.58557),
+            Vector3.new(23.250845, 5.6657753, 1021.79108),
+          },
+          {
+            Vector3.new(75.4334259, 5.07404947, 1048.54626),
+            Vector3.new(59.5415268, 9.24949932, 1002.75214),
+            Vector3.new(21.7118225, 26.9064331, 982.54895),
+          },
+          {
+            Vector3.new(86.8510361, 4.95114946, 1012.60217),
+            Vector3.new(78.8645248, 5.21786928, 1063.84338),
+            Vector3.new(39.1454849, 5, 1062.37744),
+          },
+          {
+            Vector3.new(85.5781631, 5.19999838, 1044.32336),
+            Vector3.new(7.32494354, 4.79999876, 1031.84668),
+            Vector3.new(-16.918314, 7.10381889, 999.609253),
+          },
+          {
+            Vector3.new(85.5781631, 5.19999838, 1044.32336),
+            Vector3.new(7.32494354, 4.79999876, 1031.84668),
+            Vector3.new(-60.5333252, 4.90647602, 1025.54321),
+          },
+          {
+            Vector3.new(85.5781631, 5.19999838, 1044.32336),
+            Vector3.new(7.32494354, 4.79999876, 1031.84668),
+            Vector3.new(-76.8479233, 4.87704134, 1009.79724),
+          },
+          {
+            Vector3.new(116.443657, 5.34364605, 1031.54187),
+            Vector3.new(136.55043, 4.80000019, 1068.89758),
+            Vector3.new(96.5291367, 5.04907751, 1055.71301),
+          },
+          {
+            Vector3.new(136.55043, 4.80000019, 1068.89758),
+            Vector3.new(96.5291367, 5.04907751, 1055.71301),
+            Vector3.new(116.443657, 5.34364605, 1031.54187),
+          },
+          {
+            Vector3.new(84.3650131, 4.95895767, 1011.05023),
+            Vector3.new(28.3323727, 5.77999735, 1021.42993),
+            Vector3.new(32.4552689, 5, 1067.22888),
+          },
+        }
+        -- Variables for the zombie, its humanoid, and destination
+
+
+
+        for i,v in pairs(randomWayPoints[math.random(1,#randomWayPoints)]) do
+          local path = PathfindingService:CreatePath()
+          -- Compute the path
+          path:ComputeAsync(zombie.HumanoidRootPart.Position, v)
+          local waypoints = path:GetWaypoints()
+          -- Get the path waypoints
+
+          local wayPointParts = {}
+          -- Loop through waypoints
+          local number2 = 0
+          for _, waypoint in pairs(waypoints) do
+            if _G.ai_done then break end
+            number2 = number2 + .5
+            local part = Instance.new("Part")
+            part.Shape = "Ball"
+            part.Material = "Neon"
+            local number = (math.sin(number2) + 1.5) /2
+            part.Size = Vector3.new(number, number, number)
+            part.Position = waypoint.Position
+            part.Anchored = true
+            part.CanCollide = false
+            part.Parent = game.Workspace
+            insert(wayPointParts, part)
+          end
+
+          for i, waypoint in pairs(waypoints) do
+            if _G.ai_done then break end
+            wayPointParts[i].BrickColor = BrickColor.new("Bright blue")
+            Zombiehumanoid:MoveTo(waypoint.Position)
+            Zombiehumanoid.MoveToFinished:Wait()
+            wayPointParts[i].BrickColor = BrickColor.new("Fire Yellow")
+          end
+        end
+        doneMoving = true
+      end)
+    while not(doneMoving or clock >_G.maxWaitTimeInLobby)  do
+      clock = clock+.1
+      wait(.1)
+    end
+    _G.ai_done = true
+    Zombiehumanoid:MoveTo(zombie.HumanoidRootPart.Position)
+  end
+  local pathargs = {
+    ["AgentHeight"] = 5,
+    ["AgentRadius"] = 3,
+    ["AgentCanJump"] = true
+  }
+  local PathfindingService = gamer[2]
+  local cs = gamer[1]
+  local localPlayer = game.Players.LocalPlayer.Character
+  local path = PathfindingService:CreatePath(pathargs)
+  local waypoints = {}
+  local currentWaypointIndex = 0
+  local weaponCooldown = 1
+  local enemy
+  local ballArray = {}
+
+  function stringInTable(st, tb)
+    if tb[st] ~= nil then return true else return false end
+    for i,v in pairs(tb) do
+      if st == v then
+        return true
+      end
+    end
+    return false
+  end
+
+  local function createPart(cframe, size, name, shape) -- this is the part we walk to
+    local part = Instance.new("Part")
+    part.Shape = shape
+    cs:AddTag(part, "RayIgnore")
+    part.Material = "Neon"
+    if _G.showPath then
+      part.Transparency = .5
+    else
+      part.Transparency = stuffTransparency
+    end
+    
+    part.Size = size
+    part.CFrame = cframe
+    part.Name = name
+    part.Anchored = true
+    part.CanCollide = false
+    part.Parent = workspace
+    part:GetPropertyChangedSignal("Transparency"):Connect(antiTransChange)
+    part.ChildAdded:Connect(antiChildChange)
+    return part
+  end
+
+  local function createHitBoxPart(size, cframe, obj)
+    local part = Instance.new("Part")
+    cs:AddTag(part, "RayIgnore")
+    part.Size = size
+    part.CFrame = cframe
+    part.Parent = obj
+    part.Name = "enemyRadius"
+    part.Anchored = false
+    part.CanCollide = false
+    part.Material = "SmoothPlastic"
+    part.Transparency = stuffTransparency
+    part:GetPropertyChangedSignal("Transparency"):Connect(antiTransChange)
+    part.ChildAdded:Connect(antiChildChange)
+    part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+    local weld = Instance.new("WeldConstraint")
+    if obj.ClassName == "Model" then
+      weld.Part1 = obj.PrimaryPart
+    else
+      weld.Part1 = obj  
+    end
+    weld.Part0 = part
+    weld.Parent = obj
+    return part
+  end
+
+  local function addHitBox(obj, size, shape)
+    local psize, cframe
+    if shape == nil then
+      local t = {
+        {size, size}, {0, size}, {-size, size},
+        {size, 0}, {-size, 0},
+        {size, -size}, {0, -size}, {-size, -size},
+      }
+      for i,v in pairs(t) do
+        psize = Vector3.new(1, 1, (size))
+        local pos1 = (obj.PrimaryPart.CFrame * CFrame.new(v[1],0,v[2])).Position
+        cframe =  CFrame.new(pos1, obj.PrimaryPart.Position)
+        cframe = cframe * CFrame.new(0,0,(-size/2) + 2)
+        createHitBoxPart(psize, cframe, obj)
+      end
+    elseif shape =="square" then -- this is for when things shoot ball projectiles
+      psize = Vector3.new(size, size, size)
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = obj.PrimaryPart.CFrame
+      else
+        cframe = obj.CFrame
+      end
+      createHitBoxPart(psize, cframe, obj)
+    elseif shape == "rectangle" then
+      psize = Vector3.new(size, size, size) -- create square around projectile
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = obj.PrimaryPart.CFrame
+      else
+        cframe = obj.CFrame
+      end
+      createHitBoxPart(psize, cframe, obj)
+
+      psize = Vector3.new(1, size, size*2)
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then -- add the pointy thing
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = obj.PrimaryPart.CFrame * CFrame.new(0, 0, (size - 5) * -1)
+      else
+        cframe = obj.CFrame * CFrame.new(0, 0, (size - 5) * -1)
+      end
+      createHitBoxPart(psize, cframe, obj)
+
+    elseif shape == "rectanglev2" then
+      psize = Vector3.new(size, size, size)
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = obj.PrimaryPart.CFrame
+      else
+        cframe = obj.CFrame
+      end
+      createHitBoxPart(psize, cframe, obj)
+
+      psize = Vector3.new(size, size, size)
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = (obj.PrimaryPart.CFrame * CFrame.new(0, 0, (size - 10) * -1)) * CFrame.Angles(math.rad(45), 0,math.rad(90))
+      else
+        cframe = (obj.CFrame * CFrame.new(0, 0, (size - 10) * -1))* CFrame.Angles(math.rad(45), 0,math.rad(90))
+      end
+      createHitBoxPart(psize, cframe, obj)
+    elseif shape == "rectanglev3" then
+      psize = Vector3.new(size, size, size)
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = obj.PrimaryPart.CFrame
+      else
+        cframe = obj.CFrame
+      end
+      createHitBoxPart(psize, cframe, obj)
+
+      psize = Vector3.new(size -5 , size - 5, size - 5)
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = (obj.PrimaryPart.CFrame * CFrame.new(0, 0, (size - 5) * -1)) * CFrame.Angles(0, math.rad(45),0)
+      else
+        cframe = (obj.CFrame * CFrame.new(0, 0, (size - 5) * -1))* CFrame.Angles(0, math.rad(45),0)
+      end
+      createHitBoxPart(psize, cframe, obj)
+
+    elseif shape == "rectangle-2" then -- rectnagle with no offset
+      psize = Vector3.new(size, size, size)
+      cframe = CFrame.new(0,0,0)
+      if obj.ClassName == "Model" then
+        obj:WaitForChild("PrimaryPart", .5)
+        cframe = obj.PrimaryPart.CFrame
+        cframe = cframe * CFrame.Angles(0, math.rad(45), 0)
+      else
+        cframe = obj.CFrame
+        cframe = cframe * CFrame.Angles(0, math.rad(45), 0)
+      end
+      createHitBoxPart(psize, cframe, obj)
+    end
+  end
+
+  local function cleanMobUp(t)
+    if _G.optimize_mobs then
+      for i,v in pairs(t:GetChildren()) do
+        if v.ClassName == "Model" then
+          v:Destroy()
+        end
+      end
+      if t:FindFirstChild("HumanoidRootPart") then
+        t.HumanoidRootPart.Transparency = 0
+      end
+      if t:FindFirstChild("Head") then
+        t.Head.Transparency = 0
+      end
+    end
+  end
+
+  local function _initHitBox(instance)
+    if instance.ClassName == "Model" then
+      while instance.PrimaryPart == nil do wait() end
+      while not instance:FindFirstChild(instance.PrimaryPart.Name) do wait() end
+      instance:WaitForChild("HumanoidRootPart")
+      instance:WaitForChild("enemyStyle", 1.5)
+      if not instance:FindFirstChild("enemyStyle") then print('no enemy style') return end
+      local mobType = instance.enemyStyle.Value
+      if mobType == "mob" or mobType == "ranged" or mobType == "melee" or mobType == "burly" then --f if mob
+        if eggEvent then -- egg event only has one tag on each mob
+          while (#cs:GetTags(instance) == 0) do
+            wait(.1)
+          end
+        else
+          while (#cs:GetTags(instance) < 2) do -- normally each mob has two
+            ScriptDebug("waiting for mob to add tag" )
+            wait(.1)
+          end
+        end
+        cs:AddTag(instance, "Enemy")
+        if _G.doInstakill then
+          if instance:FindFirstChild("Humanoid") and instakillTable[instance.Name] then
+            instance.Humanoid.Health = 0
+          end
+        end
+        if mobType ~= "ranged" then
+          if game.PlaceId == 5281215714 then -- if volcanic mob
+            if instance.Name == "Explosive Lava Walker" or instance.Name == "Aggressive Lava Walker" then
+              addHitBox(instance, 8.5)
+            end
+          elseif game.PlaceId == 6216785535 then
+            if instance.Name == "Temple Guard" then
+              addHitBox(instance, 3)
+            end                
+          else
+            addHitBox(instance, 7)
+          end
+        end
+      else -- if not mob then
+        if eggEvent then -- egg event has 0 tagso n boss
+          while #cs:GetTags(instance) ~= 0 do
+            wait()
+          end
+        else
+          while #cs:GetTags(instance) < 1 do
+            wait()
+          end          
+        end
+        if _G.doInstakill then
+          if instance:FindFirstChild("Humanoid") and instakillTable[instance.Name] then
+            instance.Humanoid.Health = 0
+          end
+        end
+        cs:AddTag(instance, "Enemy")             
+      end
+    end  
+  end
+
+  local function initHitBox()
+    if workspace:FindFirstChild("tier") or workspace:FindFirstChild("currentWave") then -- boss raid or wave defense ( they work the same )
+      workspace.enemies.ChildAdded:Connect(function(instance)
+          if instance.Name == "Stone Warrior" then -- instakill in mob folder
+            instance:WaitForChild("Humanoid")
+            addHitBox(instance, 5)
+            wait(1)
+            instance.Humanoid.Health = 0
+          else
+            _initHitBox(instance)
+            cleanMobUp(instance)
+          end
+        end)
+    else
+      for i,room in pairs(workspace.dungeon:GetChildren()) do -- normal dungeon handler
+        if room:FindFirstChild("enemyFolder") then
+          local efold = room:FindFirstChild("enemyFolder")
+          if efold then
+            local e = efold:FindFirstChildOfClass("Model")
+            if e then
+              if e:FindFirstChild("Humanoid") then -- if folder already has mobs then add hit box
+                wait(.5)
+                for i,instance in pairs(efold:GetChildren()) do
+                  _initHitBox(instance)
+                  cleanMobUp(instance)
+                end
+              end
+            end
+            efold.ChildAdded:Connect(function(instance) -- all future folders, if mob spawned, give hitbox
+                _initHitBox(instance)
+                cleanMobUp(instance)
+              end)
+          end
+        end
+      end
+    end
+  end
+
+  local projNameList = {} -- important
+  local enemyProjNameList = {}
+
+  local function updateProjsList()
+    if game.ReplicatedStorage:FindFirstChild("projectiles") then
+      local n1 = game:GetService("ReplicatedStorage").projectiles:GetChildren()
+      local n2 = game:GetService("ReplicatedStorage").enemyProjectiles:GetChildren()
+      for i,v in pairs(n1) do
+        projNameList[v.Name] = true
+      end
+      for i,v in pairs(n2) do
+        enemyProjNameList[v.Name] = true
+      end
+      enemyProjNameList["secondBossSlamHitbox"] = true
+    end
+  end
+
+  updateProjsList()
+
+  local function createBall(vector) -- balls that pathfinding places
+    local part = Instance.new("Part")
+    cs:AddTag(part, "RayIgnore")
+    part.Shape = "Ball"
+    part.Material = "Neon"
+    part.Size = Vector3.new(0.6, 0.6, 0.6)
+    part.Position = vector
+    part.Anchored = true
+    part.CanCollide = false
+    part.Name = regionPartName
+    part.Parent = game.Workspace
+    ballArray[#ballArray+1] = part
+  end
+
+  local thePart = createPart(CFrame.new(0,0,0), Vector3.new(3,3,3), regionPartName, "Ball")
+  local selectionBox = Instance.new("SelectionBox")
+
+  local function getMag(vector1, vector2)
+    -- removes sqrt because time, reduces function complexity
+    local newV2 = Vector3.new(vector2.X, vector1.Y, vector2.Z)
+    --return (vector1 - newV2).magnitude
+    return (vector1 - vector2).magnitude
+    --return ((vector1.X - vector2.X)^2)+((vector1.Y - vector2.Y)^2)+((vector1.Z - vector2.Z)^2) 
+  end
+
+  local function getPlayer()
+    local play, chara, hum, root = nil, nil, nil, nil
+    while not game.Players.LocalPlayer do
+      wait()
+    end
+    if game.Players.LocalPlayer then
+      play = game.Players.LocalPlayer
+      while not game.Players.LocalPlayer.Character do
+        wait()
+      end
+      if game.Players.LocalPlayer.Character then
+        chara = game.Players.LocalPlayer.character
+        while not game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") do
+          wait()
+        end          
+        if game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+          hum = game.Players.LocalPlayer.Character.Humanoid
+        end
+        while not game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") do
+          wait()
+        end    
+        if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+          root = game.Players.LocalPlayer.Character.HumanoidRootPart
+        end
+      end
+    end
+    return play, chara, hum, root
+  end
+
+  
+  function SelectBoxChange(adornee)
+    selectionBox.Adornee = adornee
+    selectionBox.Color3 = Color3.new(1,0,0)
+    selectionBox.Parent = adornee
+  end
+
+  local function findCloseEnemy()
+    local bestMob = nil
+    local bestDist = math.huge
+    if #cs:GetTagged("Prio-Enemy") > 0 then
+      return cs:GetTagged("Prio-Enemy")[1]
+    end
+    while #cs:GetTagged("Enemy") < 1 do
+      -- script should enter a dodge mode
+      ScriptDebug("Waiting for enemies...")
+      if extremelyFast then
+        game:GetService("RunService").RenderStepped:wait()
+      else
+        wait()
+      end
+    end
+    while bestMob == nil do
+      local enemies = cs:GetTagged("Enemy")
+      local _, _, _, root = getPlayer()
+      for i, mob in pairs(enemies) do
+        if mob:FindFirstChild("HumanoidRootPart") and root ~= nil then
+          local dst = getMag(root.Position, mob.HumanoidRootPart.Position)
+          if dst < bestDist then
+            bestMob = mob
+            bestDist = dst
+          end
+        end
+      end
+      if bestMob ~= nil then break end
+      if extremelyFast then
+        game:GetService("RunService").RenderStepped:wait()
+      else
+        wait()
+      end
+    end
+    if _G.showTarget then
+      SelectBoxChange(bestMob.HumanoidRootPart)
+    end
+    --targetPart.CFrame = bestMob.HumanoidRootPart.CFrame * CFrame.new(0,5,0)
+    return bestMob
+  end
+
+
+  function charLookAt(chr,target) --assume chr is a character and target is a brick to look towards
+    if chr.PrimaryPart then --just make sure the character's HRP has loaded
+      local chrPos=chr.PrimaryPart.Position --get the position of the HRP
+      local tPos=target.Position --get the position of the target
+      local newCF=CFrame.new(Vector3.new(chrPos.x,chrPos.y,chrPos.z),Vector3.new(tPos.x,chrPos.y,tPos.z)) --create our CFrame
+      chr:SetPrimaryPartCFrame(newCF) --set the HRP's CFrame to our result, thus moving the character!
+    end
+  end
+
+  local function clearBalls()
+    for i, v in pairs(ballArray) do
+      v:Destroy()
+    end
+    ballArray = {}
+  end
+
+
+  local function followPath(position)
+    local root = game.Players.LocalPlayer.Character.HumanoidRootPart
+    local hum = game.Players.LocalPlayer.Character.Humanoid
+    path:ComputeAsync(root.Position, position)
+    waypoints = {}
+    if path.Status == Enum.PathStatus.Success then
+      waypoints = path:GetWaypoints()
+      if sDebug then
+        clearBalls()
+        for i, v in pairs(waypoints) do
+          createBall(v.Position)
+        end
+      end
+      currentWaypointIndex = 2
+      if waypoints[currentWaypointIndex] == Enum.PathWaypointAction.Jump then
+        hum.Jump = true
+      end
+      hum:MoveTo(waypoints[currentWaypointIndex].Position)
+
+    else
+      print('path not success')
+      if enemy then
+        hum:MoveTo(enemy.PrimaryPart.Position)
+      else
+        hum:MoveTo(root.Position)
+      end
+      
+    end
+  end
+
+  local function onWaypointReached(reached)
+    local play, chara, hum, root = getPlayer()
+    if chara ~= nil and hum ~= nil and reached and currentWaypointIndex < #waypoints then
+      currentWaypointIndex = currentWaypointIndex + 1
+      charLookAt(chara, enemy.HumanoidRootPart)
+      hum:MoveTo(waypoints[currentWaypointIndex].Position)
+    elseif chara ~= nil and hum ~= ni then
+      charLookAt(chara, enemy.HumanoidRootPart)
+    end
+  end
+
+  local function onPathBlocked(blockedWaypointIndex)
+    print('path blocked')
+    local play, chara, hum, root = getPlayer()
+    if chara ~= nil and enemy ~= nil then
+      charLookAt(chara, enemy.HumanoidRootPart)
+    end
+    if blockedWaypointIndex > currentWaypointIndex then
+      followPath(destination)
+    end
+  end
+
+  local function rayCollectionService()
+    local play, chara, hum, root = getPlayer()
+    if chara == nil then return end
+    cs:AddTag(chara, "RayIgnore")
+    cs:AddTag(workspace.Terrain, "RayWhitelist")
+    if workspace:FindFirstChild("tier") then -- boss raid 
+      for i,v in pairs(game:GetService("Workspace").mapModel:GetChildren()) do
+        if v.ClassName == "Part" or v.ClassName == "UnionOperation" or v.ClassName == "WedgePart" then
+          if v ~= chara and v.Name ~= regionPartName and v.Transparency < 1 and v.Name ~= "enemyRadius" then
+            cs:AddTag(v, "RayWhitelist")
+          end
+        elseif  v.ClassName == "Model" then
+          if v ~= chara then
+            cs:AddTag(v, "RayWhitelist")
+          end
+        end
+      end
+    elseif workspace:FindFirstChild("currentWave") then -- wave defense
+      for i,v in pairs(workspace:GetChildren()) do
+        if string.find(v.Name, "Arena") then
+          cs:AddTag(v, "RayWhitelist")
+        end
+      end
+    else -- normal dungeon
+      local dun = waitForExist(workspace, "dungeon")
+      for i,room in pairs(dun:GetChildren()) do
+        for j, v in pairs(room:GetChildren()) do
+          if v.ClassName == "Part" or v.ClassName == "UnionOperation" or v.ClassName == "WedgePart"  then
+            if v.Transparency < 1 then
+              cs:AddTag(v, "RayWhitelist")
+            end
+          elseif v.ClassName == "Model" then
+            cs:AddTag(v, "RayWhitelist")      
+          end      
+        end
+      end
+      for i,v in pairs(workspace:GetChildren()) do
+        if v.ClassName == "Part" or v.ClassName == "UnionOperation" or v.ClassName == "WedgePart" then
+          if v ~= chara and v.Name ~= regionPartName and v.Transparency < 1 and v.Name ~= "enemyRadius" then
+            cs:AddTag(v, "RayWhitelist")
+          end
+        elseif  v.ClassName == "Model" then
+          if v ~= chara then
+            cs:AddTag(v, "RayWhitelist")
+          end
+        end
+      end
+    end
+  end
+
+
+  local function lookAt(target, eye)
+    local forwardVector = (target - eye).Unit
+    local upVector = Vector3.new(0, 1, 0)
+    -- Remember the right-hand rule
+    local rightVector = forwardVector:Cross(upVector)
+    local upVector2 = rightVector:Cross(forwardVector)
+
+    return CFrame.fromMatrix(eye, rightVector, upVector2)
+  end
+
+  function round(num)
+    return math.floor(num + 0.5)
+  end
+
+  function roundVector(vector)
+    return Vector3.new(round(vector.X), round(vector.Y), round(vector.Z))
+  end
+
+  local oldTargetPos = Vector3.new(0,0,0)
+  local targetPos = Vector3.new(1,0,0)
+  local function makePath(target, value)
+    if value == nil then value = false end
+    local play, chara, hum, root = getPlayer()
+    if target.ClassName == "Model" then
+      targetPos = roundVector(target.PrimaryPart.Position)
+    else
+      targetPos = roundVector(target.Position)
+    end
+    if hum ~= nil and root ~= nil then
+      oldTargetPos = targetPos
+      destination = targetPos
+      if value then
+        if enemy ~= nil then
+          charLookAt(chara, enemy.PrimaryPart)
+        end
+        spawn(clearBalls)
+        hum:MoveTo(targetPos)
+      else
+        followPath(targetPos)
+      end
+    end
+  end
+
+  function visualRay(long)
+    local p = Instance.new("Part")
+    cs:AddTag(p, "RayIgnore")
+    p.Size = Vector3.new(2,2,2) 
+    p.Name = "Ray"
+    p.Anchored = true
+    p.Material = "Neon"
+    p.CanCollide = false
+    p.Parent = workspace
+    local Debris = game:GetService("Debris")
+    Debris:AddItem(p, long)
+    return p
+  end
+
+  function rayCast(sCF, eCF, ignoreName, whitelist)
+    local endGoal = eCF.p
+    local start = sCF.p
+    local Ray = Ray.new(start, (endGoal - start))
+    local list = cs:GetTagged(ignoreName)
+    local part, hitPosition
+    if whitelist then
+      part, hitPosition = workspace:FindPartOnRayWithWhitelist(Ray,list)
+    else
+      part, hitPosition = workspace:FindPartOnRayWithIgnoreList(Ray,list)
+    end
+    --if ignoreName == "directionWL" then
+    --[[ ray visualize
+      local p = visualRay(.005)
+      local distance = (start - hitPosition).Magnitude
+      p.Size = Vector3.new(0.3, 0.3, distance)
+      p.CFrame = lookAt(start, hitPosition)*CFrame.new(0, 0, -distance/2)
+    end]]
+
+    return hitPosition, part
+  end
+  -- false is blacklist, true is whitelist
+  local whiteListBlackList = {
+    ["laserBeam"] = true, 
+    ["bossRiflePreCast"] = true, 
+    ["bossRifleShot"] = true, 
+    ["hitIndicatorIceAOE"] = true, 
+    ["iceBeamIndicator"] = true, 
+    ["projectile"] = true, 
+    ["mageProjectileBall"] = true, 
+    ["thirdBossSafeSpots"] = true, 
+    ["secondBossOrb"] = true, 
+    ["thirdBossOrbShot"] = true, 
+    ["spikePrecast"] = true, 
+    ["kolvumarTrail"] = true, 
+    ["Kraken Tentacle"] = true,
+    ["secondBossRandomSquare"] = true,
+    ["initialMageBossEntry"] = false, 
+    ["initialKingBossEntry"] = false, 
+    ["initialHunterBossEntry"] = false, 
+    ["thirdBossSafeSpot"] = false, 
+    ["forceField"] = false, 
+    ["safeSpotCircle"] = false, 
+    ["secondBossSafeSpots"] = false
+
+  }
+  local lastCheckList = {
+    ["glowPart"] = true, 
+    ["outerPrecast"] = true, 
+    ["beam"] = true, 
+    ["Beam"] = true, 
+    ["precast"] = true, 
+    ["preCast"] = true, 
+    ["HumanoidRootPart"] = true
+  }
+
+  local checkProjResult = nil
+  local checkProjResult1 = nil
+  local checkProjResult2 = nil
+  local projNameTemp = nil
+  local projNameParentTemp = nil
+
+  local function checkIfProjectile(obj)
+    projNameTemp = obj.Name
+    if projNameTemp == "enemyRadius" then
+      return true
+    end
+    if obj.Transparency == 1 then
+      return false
+    end
+
+    checkProjResult = whiteListBlackList[projNameTemp]
+    if checkProjResult ~= nil then
+      if checkProjResult then
+        return checkProjResult
+      end
+    end
+    projNameParentTemp = obj.Parent
+    checkProjResult1 = whiteListBlackList[obj.Parent.Name]
+    if checkProjResult1 ~= nil then
+      return checkProjResult1
+    end
+
+    if stringInTable(projNameTemp, projNameList) then
+      return false
+    end
+
+    checkProjResult2 = lastCheckList[projNameTemp]
+    if checkProjResult2 ~= nil and (obj.ClassName == "Part" ) and projNameParentTemp ~= game.Players.LocalPlayer.Character and (checkProjResult2) then --or obj.ClassName == "Union"
+      return true
+    else
+      return false
+    end
+  end
+
+
+  local regionPartSize = 4
+  local regionStartSize = 5--5
+  local regionPartDivisor = 1.4--1.5
+  local readyPartTable = {}
+  local randomNum = math.random(0,4)
+  local function createRegionPart()
+    if _G.loadSlow then
+      game:GetService("RunService").RenderStepped:wait()
+    end
+    local part = Instance.new("Part")
+    cs:AddTag(part, "RayIgnore")
+    part.Size = Vector3.new(regionPartSize, 50, regionPartSize)
+    part.CFrame = CFrame.new(0,100,0)
+    part.Name = regionPartName
+    part.Anchored = true
+    part.CanCollide = false
+    part.Material = "SmoothPlastic"
+    part.Transparency = stuffTransparency --.9
+    part:GetPropertyChangedSignal("Transparency"):Connect(antiTransChange)
+    part.ChildAdded:Connect(antiChildChange)
+    part.BrickColor = BrickColor.new("Black")
+
+    if randomNum == 0 then
+      if workspace:FindFirstChild("hardcore") then
+        part.Parent = workspace.hardcore
+      else
+        part.Parent = workspace.raidProgress
+      end
+    elseif randomNum== 1 then
+      part.Parent = workspace.timeLeft
+    elseif randomNum == 2 then
+      part.Parent = workspace.stats
+    elseif randomNum==3 then
+      if workspace:FindFirstChild("start") then
+        part.Parent = workspace.start
+      else
+        part.Parent = workspace.dungeonStarted
+      end
+    elseif randomNum == 4 then
+      part.Parent = workspace.Camera
+    end
+
+
+    local connection = part.Touched:Connect(function() end)
+    insert(readyPartTable, part)
+    return part
+  end
+
+  local function getTableSetup(size)
+    local t = {}
+    for j = 1, size do -- these loops actually make the table
+      for l = 1, size do
+        if t[j] == nil then -- if not obj, make obj
+          t[j] = {}
+        end
+        if t[j][l] == nil then -- if not obj, make obj
+          t[j][l] = {['obj'] = nil, ['safe'] = nil} 
+        end
+      end
+    end
+    return t
+  end
+
+  local function createInitalRegionTable(size)
+    --441
+    for i= 1, 441 do
+      createRegionPart()
+    end
+    local root = game.Players.LocalPlayer.Character.HumanoidRootPart
+    local regionTable = getTableSetup(size)
+    local midPoint = (size/2) + .5 --get center cords
+    for i = 1, size do
+      for j = 1, size do
+        local part = remove(readyPartTable)
+        regionTable[i][j]['obj'] = part
+        regionTable[i][j]['safe'] = true
+        if i ~= midPoint or j ~= midPoint then
+          cs:AddTag(regionTable[i][j]['obj'], "directionWL")
+        end
+      end
+    end
+    return regionTable
+  end
+
+  local regionTable = createInitalRegionTable(regionStartSize)
+
+
+  local function GenerateSpiral(size)
+    --local _,_,_,root = getPlayer()
+    local size = #regionTable
+    local _,_,_,root = getPlayer()
+    if root ~= nil then
+      local x = 0
+      local y = 0
+      local d = 0
+      local c = 0
+      local s = 0
+      local tableIndex, part, parts
+      for k = 1, size - 1 do 
+        for j = 0, (k < (size - 1) and 2 or 3) do 
+          for i = 0, s do 
+            local Vector = root.Position + Vector3.new(x, 0, y)
+
+            local Part = Instance.new("Part")
+            Part.Anchored = true 
+            Part.CanCollide = false 
+            Part.Position = Vector 
+            Part.Size = Vector3.new(2, 2, 2)
+            Part.Parent = workspace
+
+            if d == 0 then 
+              y = y + 5 
+            elseif d == 1 then 
+              x = x + 5 
+            elseif d == 2 then 
+              y = y - 5 
+            elseif d == 3 then 
+              x = x - 5 
+            end 
+          end
+          d = (d + 1) % 4
+        end
+        s = s + 1
+      end
+    end
+  end 
+
+  local function updateRegionTable()
+    local _,_,_,root = getPlayer()
+    if root ~= nil then
+      local size = #regionTable
+      local x = (((size - 1) * regionPartSize) / 2) * -1/regionPartDivisor -- size minus one because the number has to be odd for the player to be centered, *5 because thats size of part being crreated, /2 to get how far back it muist go, *-1 to get negative #
+      local z = (((size - 1) * regionPartSize) / 2) * -1/regionPartDivisor
+      local tableIndex, part, parts
+      for i, v in pairs(regionTable) do
+        for j, k in pairs(v) do
+          tableIndex = k
+          part = tableIndex['obj']
+          if root ~= nil and part ~= nil  then
+            part.CFrame = root.CFrame * CFrame.new(x,0,z)
+            --part.Position = (root.CFrame * CFrame.new(x,-1,z)).Position
+            parts = part:GetTouchingParts() -- local parts = GetTouchingParts(part)
+            part.BrickColor = BrickColor.new("Black")
+            tableIndex['safe'] = true
+            for m, k in pairs(parts) do
+              if checkIfProjectile(k) then
+                part.BrickColor = BrickColor.new("Bright red")
+                tableIndex['safe'] = false
+                break
+              end        
+            end
+          end
+          z = z + regionPartSize/regionPartDivisor
+        end
+        z = (((size - 1) * regionPartSize) / 2) * -1/regionPartDivisor
+        x = x + regionPartSize/regionPartDivisor
+      end
+    end
+  end
+
+--[[
+  local function updateRegionTable()
+    local _,_,_,root = getPlayer()
+    if root ~= nil then
+      local size = #regionTable
+      local x = (((size - 1) * regionPartSize) / 2) * -1/regionPartDivisor -- size minus one because the number has to be odd for the player to be centered, *5 because thats size of part being crreated, /2 to get how far back it muist go, *-1 to get negative #
+      local z = (((size - 1) * regionPartSize) / 2) * -1/regionPartDivisor
+      local tableIndex, part, parts
+      for i, v in pairs(regionTable) do
+        for j, k in pairs(v) do
+          tableIndex = k
+          part = tableIndex['obj']
+          if root ~= nil and part ~= nil  then
+            part.CFrame = root.CFrame * CFrame.new(x,0,z)
+            --part.Position = (root.CFrame * CFrame.new(x,-1,z)).Position
+            parts = part:GetTouchingParts() -- local parts = GetTouchingParts(part)
+            part.BrickColor = BrickColor.new("Black")
+            tableIndex['safe'] = true
+            for m, k in pairs(parts) do
+              if checkIfProjectile(k) then
+                part.BrickColor = BrickColor.new("Bright red")
+                tableIndex['safe'] = false
+                break
+              end        
+            end
+          end
+          z = z + regionPartSize/regionPartDivisor
+        end
+        z = (((size - 1) * regionPartSize) / 2) * -1/regionPartDivisor
+        x = x + regionPartSize/regionPartDivisor
+      end
+    end
+  end
+]]
+
+  local function increaseRegionTable()
+    local p, new
+    for i,col in pairs(regionTable) do
+      if #readyPartTable == 0 then
+        createRegionPart()
+      end
+      p = remove(readyPartTable)
+      new = {}
+      new['obj'] = p
+      insert(regionTable[i], 1, new)
+      if #readyPartTable == 0 then
+        createRegionPart()
+      end
+      p = remove(readyPartTable)
+      new = {}
+      new['obj'] = p
+      insert(regionTable[i], new)
+    end
+    local topColumn = {}
+    for i, row in pairs(regionTable[1]) do
+      if #readyPartTable == 0 then
+        createRegionPart()
+      end
+      p = remove(readyPartTable)
+      new = {}
+      new['obj'] = p
+      insert(topColumn, new)
+    end
+    local botColumn = {}
+    for i, row in pairs(regionTable[1]) do
+      if #readyPartTable == 0 then
+        createRegionPart()
+      end
+      p = remove(readyPartTable)
+      local new = {}
+      new['obj'] = p
+      insert(botColumn, new)
+    end
+    insert(regionTable, 1, topColumn)
+    insert(regionTable, botColumn)
+  end
+
+  local function decreaseRegionTable()
+    local tr
+    for i,col in pairs(regionTable) do
+      tr = remove(regionTable[i], #regionTable[i])
+      if tr ~= nil then
+        tr['obj'].CFrame = CFrame.new(0,0,0)
+        insert(readyPartTable, tr['obj'])
+        local tr = remove(regionTable[i], 1)
+        tr['obj'].CFrame = CFrame.new(0,0,0)
+        insert(readyPartTable, tr['obj'])
+      end
+    end
+    tr = remove(regionTable, #regionTable)
+    for i, v in pairs(tr) do
+      if v ~= nil then
+        v['obj'].CFrame = CFrame.new(0,0,0)
+        insert(readyPartTable, v['obj'])
+      end
+    end
+    tr = remove(regionTable, 1)
+    for i, v in pairs(tr) do
+      if v ~= nil then
+        v['obj'].CFrame = CFrame.new(0,0,0)
+        insert(readyPartTable, v['obj'])
+      end
+    end
+  end
+
+
+
+  local objectiveExists = false
+  local objectiveObject = nil
+  local forceObjectiveExists = false
+  function checkAroundPlayer(regionTable, s)
+    s = (s/2) + .5 --get center cords
+    for i = #regionTable - s, regionStartSize do
+      if not regionTable[i][i]['safe'] then return false end
+    end
+    return true
+  end
+
+  local function checkCenter(regionTable, s)
+    s = (s/2) + .5 --get center cords
+    return regionTable[s][s]['safe']
+  end
+
+  local function decide()
+    enemy = findCloseEnemy()
+    local num = mobRange
+    if enemy ~= nil and enemy.Name ~= "Azrallik's Heart" and enemy.Name ~= "Dragon Orb" then
+      enemy:WaitForChild("enemyStyle")
+      local mobType = enemy.enemyStyle.Value
+      if mobType ~= "mob" and mobType ~= "ranged" and mobType ~= "melee" and mobType ~= "burly" then -- if boss then
+        num = bossRange
+        bossPresent = true
+      else -- if mob
+        if bossPresent then -- if boss did exist but now didnt, that means boss died
+          for i,v in pairs(workspace:GetChildren()) do
+            if enemyProjNameList[v.Name] then
+              v:Destroy()
+            end
+          end
+        end
+        bossPresent = false
+      end 
+    end
+    --if enemy.Name == "Ancient Lava Mage" then num = 25 end
+    local _,_, hum,root = getPlayer()
+    if root ~= nil and enemy ~= nil then
+      local ePos = enemy.PrimaryPart.Position
+      local eNVec = Vector3.new(ePos.X, root.Position.Y, ePos.z)
+      local actualDist = getMag(eNVec, root.Position)  - (enemy.PrimaryPart.Size.Z/2) 
+      updateRegionTable()
+
+      if forceObjectiveExists then
+        return 'chase_fobjective', nil
+      elseif not checkAroundPlayer(regionTable, #regionTable)  then
+        if not bossPresent and _G.teleportDuringBossOnly then
+          walkspeed = 30
+        else
+          walkspeed = 24
+        end
+        return 'dodge', nil
+      elseif objectiveExists and objectiveObject ~= nil then
+        walkspeed = 24
+        return 'chase_objective', nil
+      elseif actualDist < num - 5  then --elseif actualDist < num - 5 and bossPresent then
+        walkspeed = 24
+        return "run", nil
+      elseif actualDist < num then
+        walkspeed = 24
+        return "strafe", nil
+      else
+        if bossPresent then
+          walkspeed = 24
+        else
+          walkspeed = 30
+        end
+        return "chase", nil
+      end
+    else
+      return "nothing"
+    end
+  end
+
+  if _G.doInstakill then
+    game:GetService("RunService").RenderStepped:connect(function()
+        if (sethiddenproperty) then
+          sethiddenproperty(game:GetService("Players").LocalPlayer, 'SimulationRadius', math.huge)
+        end
+      end)
+  end
+  local _, p, height
+  local smalltpdebuff = true
+  local function mainLoop()
+    spawn(function()
+        local _,_,hum,root = getPlayer()
+        while not gameOver do
+          _,_,hum,root = getPlayer()
+          if root ~= nil and hum ~= nil and hum.Health > 0 then
+            spawn(function()
+                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkspeed
+              end)
+            local thought, data = decide()
+            ScriptDebug("Thought: ".. thought .. ", Enemy: " .. enemy.Name)
+            if thought == "chase" then
+              _, p = rayCast(root.CFrame, enemy.PrimaryPart.CFrame, "RayWhitelist", true) 
+              if p == nil then -- if no walls between player and enemy then use moveto instead of pathfinding it
+                makePath(enemy, true)
+              else
+                makePath(enemy)
+              end
+            elseif thought == "chase_objective" then
+              if objectiveObject ~= nil and objectiveObject.ClassName == "Model" then
+                _, p = rayCast(root.CFrame * CFrame.new(0,0,0), objectiveObject.PrimaryPart.CFrame * CFrame.new(0,4,0), "RayWhitelist", true)
+              elseif objectiveObject ~= nil then
+                _, p = rayCast(root.CFrame * CFrame.new(0,0,0), objectiveObject.CFrame * CFrame.new(0,4,0), "RayWhitelist", true)
+              end
+              if p == nil then -- if no walls between player and objective then use moveto instead of pathfinding it
+                makePath(objectiveObject, true)
+              else
+                makePath(objectiveObject)
+              end
+            elseif thought == "chase_fobjective" then
+              _, p = rayCast(root.CFrame, thePart.CFrame, "RayWhitelist", true)
+              if p == nil then -- if no walls between player and objective then use moveto instead of pathfinding it
+                makePath(thePart, true)
+              else
+                makePath(thePart)
+              end
+            elseif thought == "strafe" then
+              local left, p = rayCast(root.CFrame, root.CFrame * CFrame.new(1000,0,0), "RayWhitelist",  true) -- left
+              local right = rayCast(root.CFrame, root.CFrame * CFrame.new(-1000,0,0), "RayWhitelist", true)-- right
+              local leftDist = getMag(root.Position, left)
+              local rightDist = getMag(root.Position, right)
+              if math.abs(leftDist - rightDist) < 5 then 
+                thePart.CFrame = root.CFrame
+              else
+                if rightDist < leftDist then
+                  thePart.CFrame = root.CFrame * CFrame.new(5,0,0)
+                else
+                  thePart.CFrame = root.CFrame * CFrame.new(-5,0,0)
+                end                  
+              end
+              makePath(thePart, true) 		
+            elseif thought == "run" then
+              _, p = rayCast(root.CFrame * CFrame.new(0,0,0), root.CFrame * CFrame.new(0,0,25), "RayWhitelist", true) 
+              if p == nil then -- if nothing is behind me, then run backwards
+                thePart.CFrame = root.CFrame * CFrame.new(0,0,25)
+                makePath(thePart, true)
+              else -- keep looking to the left and right till we find a point with no part
+                local found = false
+                for i = 1, 20 do
+                  if found then
+                    break
+                  end
+                  for j = 1, 2 do
+                    local studVal = i * 9
+                    if j == 1 then
+                      studVal = studVal * -1
+                    end
+                    _, p = rayCast(root.CFrame, root.CFrame * CFrame.new(studVal,-2,25 - i), "RayWhitelist", true) 
+                    if p == nil then -- location found!
+                      found = true
+                      thePart.CFrame = root.CFrame * CFrame.new(studVal,-2,25 - i)
+                      break
+                    end
+                  end
+                end
+                makePath(thePart, true)
+              end
+            elseif thought == "dodge" then
+              local cSafe = nil -- gets the nearest safe spot
+              local cSafeVal = math.huge
+              local temp, temp1
+              local inCenter = false
+              local s = (#regionTable/2) + .5 --get center cords
+              while cSafe == nil and root ~= nil and hum ~= nil and hum.Health > 0 do
+                if regionTable[s][s]['safe'] then inCenter = true cSafe = regionTable[s][s]['obj'] break end -- if its 1, break cause it has to be best
+                for x,rowObj in pairs(regionTable) do
+                  for y, colObj in pairs(rowObj) do
+                    temp = regionTable[x][y]
+                    temp1 = math.floor(getMag(root.Position, temp['obj'].Position) + .5)
+                    if temp['safe'] and temp1 < cSafeVal then
+                      --print("Cur Val: ".. temp1 .. " Best Val: " .. cSafeVal)
+                      _, p = rayCast(root.CFrame * CFrame.new(0,0,0), CFrame.new(temp['obj'].Position, root.Position) * CFrame.new(0,0,regionPartSize/2), "RayWhitelist", true) 
+                      if p == nil then
+                        cSafe = temp['obj']
+                        cSafeVal = temp1
+                      else
+                        temp['obj'].BrickColor = BrickColor.new("Bright yellow")
+                      end
+                    end          
+                  end
+                end
+                if cSafe ~= nil then -- if safe found break loop,
+                  break
+                else -- if no safe found, increase scope and loop over everything again
+                  increaseRegionTable()
+                  updateRegionTable()
+                  if extremelyFast then
+                    game:GetService("RunService").RenderStepped:wait()
+                  else
+                    wait()
+                  end
+                end
+              end -- while loop done here, searching done
+              _,_,hum,root = getPlayer()
+              if cSafe ~= nil and root ~= nil and hum ~= nil then
+                if inCenter then
+                  if objectiveExists then
+                    if objectiveObject ~= nil and objectiveObject.ClassName == "Model" then
+                      height = Vector3.new(objectiveObject.PrimaryPart.Position.X, root.Position.Y, objectiveObject.PrimaryPart.Position.Z)
+                    elseif objectiveObject ~= nil then
+                      height = Vector3.new(objectiveObject.Position.X, root.Position.Y, objectiveObject.Position.Z)
+                    end
+                  else
+                    height = Vector3.new(enemy.PrimaryPart.Position.X, root.Position.Y, enemy.PrimaryPart.Position.Z)
+                  end
+                  _, p = rayCast(root.CFrame * CFrame.new(0,0,0), CFrame.new(height), "directionWL", true)
+                  if p ~= nil and p.BrickColor == BrickColor.new("Black") then
+                    if objectiveExists then
+                      thePart.CFrame = p.CFrame -- move thepart to the thing safe thats towards objective
+                    elseif getMag(enemy.PrimaryPart.Position, root.Position) > bossRange then -- if the enemy isnt within ability range then set thepart to the closet safe spot
+                      --print('move closer')
+                      thePart.CFrame = p.CFrame
+                    else -- if everything is wrong then go to safe spot
+                      --print('stay')
+                      thePart.CFrame = root.CFrame
+                    end
+                  else -- safe spot towards objectives/enemy is not safe/ dont do shit
+                    --print('dont move')
+                    thePart.CFrame = cSafe.CFrame
+                  end
+                else
+                  thePart.CFrame = cSafe.CFrame
+                end
+                cSafe.BrickColor = BrickColor.new("Lime green")
+                if inCenter then -- if incenter then just path to the part (since it might be towards an enemy or objective
+                  game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = cSafe.CFrame
+                  makePath(thePart, true)
+                else
+                  if (cSafeVal < _G.smallTeleportVal) and _G.smallTeleports and smalltpdebuff then -- if not incenter and the dodge is close, just TP to it -- > 9
+                    if not _G.teleportDuringBossOnly or bossPresent then
+                      smalltpdebuff = false
+                      game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = thePart.CFrame
+                      makePath(thePart, true)
+                      spawn(function()
+                          wait(.1)
+                          smalltpdebuff = true
+                        end)
+                    else -- if neither just play normal
+                      makePath(thePart, true)
+                    end
+                  else -- if neither just play normal
+                    makePath(thePart, true)
+                  end
+                end
+              end
+              while #regionTable > regionStartSize do
+                decreaseRegionTable()
+                if extremelyFast then
+                  game:GetService("RunService").RenderStepped:wait()
+                else
+                  wait()
+                end
+              end
+            end
+          end
+          if extremelyFast then
+            game:GetService("RunService").RenderStepped:wait()
+          else
+            wait()
+          end
+        end
+      end)  
+  end
